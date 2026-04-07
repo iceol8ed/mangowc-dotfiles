@@ -13,7 +13,7 @@ systemctl --user import-environment DISPLAY WAYLAND_DISPLAY
 swaybg -i ~/.config/bg.jpg -m fill &
 
 # Daemons
-autotiling-rs &
+# autotiling-rs &
 ydotoold &
 wl-clip-persist --clipboard regular &
 wl-paste --watch cliphist store &
