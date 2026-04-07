@@ -1,0 +1,132 @@
+# --- Variables ---
+set $mod Mod4
+set $term foot
+set $menu fuzzel -I
+
+# --- Input ---
+# Replaces: input { natural_scroll = yes ... }
+# Enable natural scrolling for all input devices
+input * {
+    natural_scroll enabled
+}
+
+input type:keyboard {
+    xkb_layout "us,gr"
+    xkb_options "grp:toggle"
+}
+
+# --- Cursor ---
+seat seat0 xcursor_theme Bibata-Modern-Classic 20
+# Hide mouse cursor after 3 seconds of inactivity
+seat * hide_cursor 3000
+
+exec_always autotiling-rs
+exec_always --no-startup-id ydotoold
+
+# --- Wallpaper ---
+output * bg ~/.config/bg.jpg fill
+
+#workspace 5 output HDMI-A-1
+#assign [app_id="spotify"] 5
+
+# --- Visuals & Decoration ---
+# Replaces: general { gaps_in/out=0, border_size=0 }
+default_border none
+default_floating_border none
+gaps inner 0
+gaps outer 0
+
+# Note: "blur" is not supported in standard Sway (requires SwayFX)
+for_window [class="^.*"] opacity 1.0
+
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+# --- Startup ---
+exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK
+exec hash dbus-update-activation-environment 2>/dev/null && \
+     dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK
+
+# Polkit: hyprpolkitagent might not work well outside Hyprland. 
+# Recommended: /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec /usr/lib/polkit-kde-authentication-agent-1
+
+exec_always gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+exec wl-clip-persist --clipboard regular
+exec wl-paste --watch cliphist store
+# Sway handles idle/suspend via swayidle usually, but we'll map your keys manually below.
+
+# --- Navigation & Movement ---
+# Move focus
+bindsym --to-code {
+  $mod+h focus left
+  $mod+l focus right
+  $mod+k focus up
+  $mod+j focus down
+
+# Move window
+  $mod+Shift+h move left
+  $mod+Shift+l move right
+  $mod+Shift+k move up
+  $mod+Shift+j move down
+}
+# --- Workspaces ---
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+
+# Move container to workspace
+bindsym $mod+Shift+1 move container to workspace number 1, workspace 1
+bindsym $mod+Shift+2 move container to workspace number 2, workspace 2
+bindsym $mod+Shift+3 move container to workspace number 3, workspace 3
+bindsym $mod+Shift+4 move container to workspace number 4, workspace 4
+bindsym $mod+Shift+5 move container to workspace number 5, workspace 5
+
+# --- Apps & Utils ---
+bindsym --to-code {
+  $mod+q kill
+  $mod+b exec helium-browser
+  $mod+Return exec $term
+  $mod+f exec $term yazi
+  $mod+n exec $term bluetui
+  $mod+Shift+n exec $term wiremix
+  $mod+space exec $menu
+  $mod+m exec localsend
+  $mod+s exec spotify
+  $mod+Shift+f fullscreen
+  $mod+Shift+t floating toggle
+
+# Monitor Power (DPMS)
+  $mod+o output * dpms off
+  $mod+Shift+o output * dpms on
+}
+
+# System Power
+bindsym $mod+Escape exec systemctl suspend
+bindsym $mod+Shift+Escape exec shutdown now
+
+# --- Mouse ---
+# Sway handles dragging floating windows with Mod+MouseLeft (move) and Mod+MouseRight (resize) by default.
+floating_modifier $mod normal
+
+# --- Volume ---
+bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 3%+
+bindsym XF86AudioLowerVolume exec wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 3%-
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+# --- Clipboard / Screenshots ---
+# Replaced hyprshot with grim+slurp
+# Copy Region
+bindsym $mod+p exec grim -g "$(slurp)" - | wl-copy
+# Screenshot Window/Screen (saved to Desktop)
+bindsym $mod+Shift+p exec grim ~/Desktop/$(date +'%Y-%m-%d-%H%M%S_grim.png')
+
+# Cliphist
+bindsym $mod+Shift+v exec cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
+
+bindsym $mod+c exec wtype -M ctrl -k Insert -m ctrl
+bindsym $mod+v exec wtype -M shift -k Insert -m shift 
+bindsym $mod+a exec wtype -M ctrl -k a -m ctrl
+bindsym $mod+w exec wtype -M ctrl -k w -m ctrl
+bindsym $mod+backspace exec wtype -M ctrl -k u -m ctrl
+
